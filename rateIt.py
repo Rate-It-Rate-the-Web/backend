@@ -21,9 +21,17 @@ def getItem(table, key, value):
     response = table.query(KeyConditionExpression=Key(key).eq(value))
     return response['Items'][0]
 
-@app.route('/login')
+def verifyOauth(accessToken):
+    #verify if access token is valid
+    response = requests.get("https://www.googleapis.com/oauth2/v1/tokeninfo", params={"access_token": accessToken})
+    return response.json()['email']
+
+
+@app.route('/login', methods=['post'])
 def login():
+    token = request.json["token"]
     session['logged_in'] = True
+    
 
 @app.route("/get/rating")
 def getRating():
@@ -31,16 +39,18 @@ def getRating():
     rating = getItem(ratingTable, 'url', url)
     return rating
 
-@app.route("/post/rating")
+@app.route("/post/rating", methods=['POST'])
 def postLike():
-    url = request.args.get('url')
+    content = request.json
     loggedIn = session.get('logged_in')
+    return "foo"
 
 
 
 
 
-
+if __name__ == "__main__":
+    app.run(debug=True)
 """
 aws dynamodb create-table --table-name rateIt --attribute-definitions AttributeName=url,AttributeType=S --key-schema AttributeName=url,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=10 --endpoint-url http://localhost:8000
 aws dynamodb put-item --table-name rateIt --item '{"url": {"S": "http://www.google.com"}, "likes": {"N": "10"}, "dislikes": {"N": "2"}}' --endpoint-url http://localhost:8000
