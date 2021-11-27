@@ -2,12 +2,12 @@ from flask import Flask, session, request
 from flask_session import Session
 import boto3
 from boto3.dynamodb.conditions import Key
-
+import requests
 
 app = Flask(__name__)
 
-app.secret_key = 'x>JE6YR.ssJzC7pw'
-SESSION_TYPE = 'mongoDb'
+app.secret_key = 'x>JE6fdsYR.ssJzC7pw'
+SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
 Session(app)
 db = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
@@ -24,13 +24,22 @@ def getItem(table, key, value):
 def verifyOauth(accessToken):
     #verify if access token is valid
     response = requests.get("https://www.googleapis.com/oauth2/v1/tokeninfo", params={"access_token": accessToken})
-    return response.json()['email']
+    if response.status_code == 200:
+        return True
+    else:
+        return False
 
 
-@app.route('/login', methods=['post'])
+@app.route('/login', methods=['POST'])
 def login():
     token = request.json["token"]
-    session['logged_in'] = True
+    validToken = verifyOauth(token)
+    if validToken:
+        userinfo = requests.get("https://www.googleapis.com/oauth2/v1/userinfo", params={"alt": "json", "access_token": token})
+        print(userinfo.json())
+        session['logged_in'] = True
+        print(session['logged_in'])
+    return "login"
     
 
 @app.route("/get/rating")
@@ -43,6 +52,7 @@ def getRating():
 def postLike():
     content = request.json
     loggedIn = session.get('logged_in')
+    print(loggedIn)
     return "foo"
 
 
