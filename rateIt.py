@@ -159,13 +159,13 @@ def login():
             session["logged_in"] = True
             session["userId"] = scanItem(
                 userTable, 'googleUserId', id)["userId"]
-            return "login"
+            return "success"
         else:
             createUser(id, userinfo["given_name"])
             session["logged_in"] = True
             session["userId"] = scanItem(
                 userTable, 'googleUserId', id)["userId"]
-            return "login"
+            return "success"
     else:
         return "invalid token"
 
@@ -174,8 +174,8 @@ def login():
 def getRating():
     url = request.args.get('url')
     rating = queryItem(ratingTable, 'url', url)
+    rating["userRating"] = (1 if checkUrlLiked(url, session["userId"]) else -1 if checkUrlDisliked(url, session["userId"]) else 0)
     return rating
-
 
 @app.route("/post/rating", methods=['POST'])
 def postRating():
