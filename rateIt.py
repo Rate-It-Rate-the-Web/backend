@@ -19,6 +19,8 @@ ratingTable = db.Table('rateIt')
 userTable = db.Table('users')
 
 
+empty = {'likes': 0, 'dislikes': 0, 'userRating': 0}
+
 def putItem(table, item):
     table.put_item(Item=item)
 
@@ -121,6 +123,8 @@ def checkUser(uuid_string):
         return True
     else:
         return False
+
+
 def checkUrlLiked(url, userId):
     # check if user has liked url
     user = queryItem(userTable, 'userId', userId)
@@ -129,6 +133,7 @@ def checkUrlLiked(url, userId):
     else:
         return False
 
+
 def checkUrlDisliked(url, userId):
     # check if user has disliked url
     user = queryItem(userTable, 'userId', userId)
@@ -136,6 +141,7 @@ def checkUrlDisliked(url, userId):
         return True
     else:
         return False
+
 
 def verifyOauth(accessToken):
     # verify if access token is valid
@@ -174,27 +180,32 @@ def login():
 def getRating():
     url = request.args.get('url')
     rating = queryItem(ratingTable, 'url', url)
-    rating["userRating"] = (1 if checkUrlLiked(url, session["userId"]) else -1 if checkUrlDisliked(url, session["userId"]) else 0)
+    try:
+        rating["userRating"] = (1 if checkUrlLiked(url, session["userId"]) else (-1 if checkUrlDisliked(url, session["userId"]) else 0))
+    except:
+        return empty
     return rating
+
 
 @app.route("/post/rating", methods=['POST'])
 def postRating():
     content = request.json
-    if session["logged_in"] and checkUser(session["userId"]):
+    user = session["userId"]
+    if session["logged_in"] and checkUser(user):
         url = content["url"]
         if content["rating"] == 1:
-            if checkUrlDisliked(url, session["userId"]):
-                incrementDisLikes(url, -1, session["userId"])
-            incrementLikes(url, 1, session["userId"])
+            if checkUrlDisliked(url, user):
+                incrementDisLikes(url, -1, user)
+            incrementLikes(url, 1, user)
         elif content["rating"] == -1:
-            if checkUrlLiked(url, session["userId"]):
-                incrementLikes(url, -1, session["userId"])
-            incrementDisLikes(url, 1, session["userId"])
+            if checkUrlLiked(url, user):
+                incrementLikes(url, -1, user)
+            incrementDisLikes(url, 1, user)
         elif content["rating"] == 0:
-            if checkUrlLiked(url, session["userId"]):
-                incrementLikes(url, -1, session["userId"])
-            if checkUrlDisliked(url, session["userId"]):
-                incrementDisLikes(url, -1, session["userId"])
+            if checkUrlLiked(url, user):
+                incrementLikes(url, -1, user)
+            if checkUrlDisliked(url, user):
+                incrementDisLikes(url, -1, user)
 
         return "success"
     else:
