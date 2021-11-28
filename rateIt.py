@@ -121,7 +121,21 @@ def checkUser(uuid_string):
         return True
     else:
         return False
+def checkUrlLiked(url, userId):
+    # check if user has liked url
+    user = queryItem(userTable, 'userId', userId)
+    if url in user['likedUrls']:
+        return True
+    else:
+        return False
 
+def checkUrlDisliked(url, userId):
+    # check if user has disliked url
+    user = queryItem(userTable, 'userId', userId)
+    if url in user['dislikedUrls']:
+        return True
+    else:
+        return False
 
 def verifyOauth(accessToken):
     # verify if access token is valid
@@ -169,18 +183,17 @@ def postRating():
     if session["logged_in"] and checkUser(session["userId"]):
         url = content["url"]
         if content["rating"] == 1:
-            # if scanItem(userTable, "userId", session["userId"]):
-            #   incrementDisLikes(url, -1, session["userId"])
-
+            if checkUrlDisliked(url, session["userId"]):
+                incrementDisLikes(url, -1, session["userId"])
             incrementLikes(url, 1, session["userId"])
         elif content["rating"] == -1:
-            if scanItem(userTable, 'url', url):
+            if checkUrlLiked(url, session["userId"]):
                 incrementLikes(url, -1, session["userId"])
             incrementDisLikes(url, 1, session["userId"])
         elif content["rating"] == 0:
-            if scanItem(userTable, 'url', url):
+            if checkUrlLiked(url, session["userId"]):
                 incrementLikes(url, -1, session["userId"])
-            if scanItem(userTable, '', url):
+            if checkUrlDisliked(url, session["userId"]):
                 incrementDisLikes(url, -1, session["userId"])
 
         return "success"
