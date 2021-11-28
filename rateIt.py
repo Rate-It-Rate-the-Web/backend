@@ -204,8 +204,9 @@ def postRating():
 if __name__ == "__main__":
     app.run(debug=True)
 """
+sudo dynamodb
+
 aws dynamodb create-table --table-name rateIt --attribute-definitions AttributeName=url,AttributeType=S --key-schema AttributeName=url,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=10 --endpoint-url http://localhost:8000
-aws dynamodb put-item --table-name rateIt --item '{"url": {"S": "http://www.google.com"}, "likes": {"N": "10"}, "dislikes": {"N": "2"}}' --endpoint-url http://localhost:8000
 
 aws dynamodb create-table --table-name users --attribute-definitions AttributeName=userId,AttributeType=S --key-schema AttributeName=userId,KeyType=HASH --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=10 --endpoint-url http://localhost:8000
 
