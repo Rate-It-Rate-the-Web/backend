@@ -128,18 +128,23 @@ def checkUser(uuid_string):
 def checkUrlLiked(url, userId):
     # check if user has liked url
     user = queryItem(userTable, 'userId', userId)
-    if url in user['likedUrls']:
-        return True
-    else:
+    try:
+        if url in user['likedUrls']:
+            return True
+        else:
+            return False
+    except: 
         return False
-
 
 def checkUrlDisliked(url, userId):
     # check if user has disliked url
     user = queryItem(userTable, 'userId', userId)
-    if url in user['dislikedUrls']:
-        return True
-    else:
+    try:
+        if url in user['dislikedUrls']:
+            return True
+        else:
+            return False
+    except:
         return False
 
 
