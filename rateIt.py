@@ -178,7 +178,7 @@ def login():
 
 @app.route("/get/rating")
 def getRating():
-    url = request.args.get('url')
+    url = request.args.get('url').lower()
     rating = queryItem(ratingTable, 'url', url)
     try:
         rating["userRating"] = (1 if checkUrlLiked(url, session["userId"]) else (-1 if checkUrlDisliked(url, session["userId"]) else 0))
@@ -191,8 +191,8 @@ def getRating():
 def postRating():
     content = request.json
     user = session["userId"]
+    url = content["url"].lower()
     if session["logged_in"] and checkUser(user):
-        url = content["url"]
         if content["rating"] == 1:
             if checkUrlDisliked(url, user):
                 incrementDisLikes(url, -1, user)
@@ -213,7 +213,7 @@ def postRating():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
 """
 sudo dynamodb
 
