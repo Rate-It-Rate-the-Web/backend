@@ -10,7 +10,7 @@ from requests.api import put
 
 app = Flask(__name__)
 
-app.secret_key = 'x>JE6fdsYR.ssJzC7pw'
+app.secret_key = 'dev'
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
 Session(app)
