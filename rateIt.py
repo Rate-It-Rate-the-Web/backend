@@ -184,11 +184,16 @@ def login():
 @app.route("/get/rating")
 def getRating():
     url = request.args.get('url').lower()
-    rating = queryItem(ratingTable, 'url', url)
+    rating = None
+    try:
+        queryItem(ratingTable, 'url', url)
+    except:
+        return empty
     try:
         rating["userRating"] = (1 if checkUrlLiked(url, session["userId"]) else (-1 if checkUrlDisliked(url, session["userId"]) else 0))
     except:
-        return empty
+        pass
+    
     return rating
 
 
