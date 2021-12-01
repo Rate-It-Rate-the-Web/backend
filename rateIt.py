@@ -201,11 +201,13 @@ def postRating():
         if content["rating"] == 1:
             if checkUrlDisliked(url, user):
                 incrementDisLikes(url, -1, user)
-            incrementLikes(url, 1, user)
+            if checkUrlLiked(url, user):
+                incrementLikes(url, 1, user)
         elif content["rating"] == -1:
             if checkUrlLiked(url, user):
                 incrementLikes(url, -1, user)
-            incrementDisLikes(url, 1, user)
+            if checkUrlDisliked(url, user):
+                incrementDisLikes(url, 1, user)
         elif content["rating"] == 0:
             if checkUrlLiked(url, user):
                 incrementLikes(url, -1, user)
