@@ -186,7 +186,7 @@ def getRating():
     url = request.args.get('url').lower()
     rating = None
     try:
-        queryItem(ratingTable, 'url', url)
+        rating = queryItem(ratingTable, 'url', url)
     except:
         return empty
     try:
