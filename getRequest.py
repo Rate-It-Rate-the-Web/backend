@@ -5,7 +5,7 @@ import db
 empty = {'likes': 0, 'dislikes': 0, 'userRating': 0}
 
 
-@db.app.route("/get/rating")
+@rateIt.app.route("/get/rating")
 def getRating():
     url = request.args.get('url').lower()
     rating = rating = db.queryItem(db.ratingTable, 'url', url)
