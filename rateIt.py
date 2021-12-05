@@ -1,13 +1,14 @@
 from flask import Flask, request, session
 import requests
 import db
+from datetime import timedelta
 
 app = Flask(__name__)
 
 app.secret_key = 'dev'
 SESSION_TYPE = 'filesystem'
 app.config.from_object(__name__)
-
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=182)
 
 empty = {'likes': 0, 'dislikes': 0, 'userRating': 0}
 
@@ -24,6 +25,7 @@ def verifyOauth(accessToken):
 
 @app.route('/login', methods=['POST'])
 def login():
+    session.permanent = True
     token = request.json["token"]
     validToken = verifyOauth(token)
     if validToken:
