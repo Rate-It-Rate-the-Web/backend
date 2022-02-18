@@ -11,8 +11,7 @@ app.config.from_object(__name__)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=182)
 
 empty = {'likes': 0, 'dislikes': 0, 'userRating': 0}
-
-
+db.appendAnswer('https%3A%2F%2Fwww.youtube.com%2F', "5abefd2b-b321-43b5-a7a9-d6825d6bed15", {'content': 'test', 'userId': '3bfeb2c9-5263-47d9-ae45-547d797a2057', 'answers': []})
 def verifyOauth(accessToken):
     # verify if access token is valid
     response = requests.get(
@@ -51,6 +50,7 @@ def login():
 def postRating():
     content = request.json
     user = session["userId"]
+    print(user)
     url = content["url"].lower()
     if session["logged_in"] and db.checkUser(user):
         if content["rating"] == 1:

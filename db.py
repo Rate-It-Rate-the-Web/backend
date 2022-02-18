@@ -134,3 +134,36 @@ def checkUrlDisliked(url, userId):
             return False
     except:
         return False
+
+
+
+def appendComment(url, comment):
+    if checkUser(comment["userId"]):
+        if not queryItem(ratingTable, 'url', url):
+            putItem(ratingTable, {"url": url, "likes": 0, "dislikes": 0, "comments": []})
+        comment["id"] = str(uuid.uuid4())
+        ratingTable.update_item(Key={'url': url}, UpdateExpression="Set comments = list_append(comments, :val)", ExpressionAttributeValues={':val': [comment]})
+    else:
+        return False
+
+def checkComment(url, commentId):
+    try: 
+        if queryItem(ratingTable, 'url', url):
+            for comment in queryItem(ratingTable, 'url', url)["comments"]:
+                if comment["id"] == commentId:
+                    return True
+    except:
+        return False
+    return False
+
+def appendAnswer(url, commentId, answer):
+    if checkUser(answer["userId"]):
+        if not checkComment(url, commentId):
+            return False
+        answer["id"] = str(uuid.uuid4())
+        comments = ratingTable.query(KeyConditionExpression=Key('url').eq(url))["Items"][0]["comments"]
+        for comment in comments:
+            if comment["id"] == commentId:
+                comment["answers"].append(answer)
+                
+        ratingTable.update_item(Key={'url': url}, UpdateExpression="set comments = :val", ExpressionAttributeValues={':val': comments})
