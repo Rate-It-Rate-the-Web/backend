@@ -2,6 +2,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 import uuid
 from flask import Flask, request, session
+from graphql import Undefined
 
 db = boto3.resource('dynamodb', endpoint_url="http://localhost:8000")
 ratingTable = db.Table('rateIt')
@@ -101,7 +102,12 @@ def checkGoogleUser(googleUserId):
         return False
     else:
         return True
-
+def getUsername(userId):
+    try:
+        user = queryItem(userTable, 'userId', userId)
+        return user['username']
+    except:
+        return False
 
 def checkUser(uuid_string):
     # check if user exists in db
@@ -139,9 +145,13 @@ def checkUrlDisliked(url, userId):
 
 def appendComment(url, comment):
     if checkUser(comment["userId"]):
-        if not queryItem(ratingTable, 'url', url):
-            putItem(ratingTable, {"url": url, "likes": 0, "dislikes": 0, "comments": []})
         comment["id"] = str(uuid.uuid4())
+        comment["answers"] = []
+        comments=queryItem(ratingTable, 'url', url)
+        if not comments:
+            putItem(ratingTable, {"url": url, "likes": 0, "dislikes": 0, "comments": []})
+        elif "comments" not in comments.keys():
+            ratingTable.update_item(Key={'url': url}, UpdateExpression="set comments = :val", ExpressionAttributeValues={':val': [comment]})
         ratingTable.update_item(Key={'url': url}, UpdateExpression="Set comments = list_append(comments, :val)", ExpressionAttributeValues={':val': [comment]})
     else:
         return False
@@ -167,3 +177,13 @@ def appendAnswer(url, commentId, answer):
                 comment["answers"].append(answer)
                 
         ratingTable.update_item(Key={'url': url}, UpdateExpression="set comments = :val", ExpressionAttributeValues={':val': comments})
+
+
+def getComments(url, indexFrom, indexTo):
+    try:
+        comments = ratingTable.query(KeyConditionExpression=Key('url').eq(url))["Items"][0]["comments"][indexFrom:indexTo]
+        for comment in comments:
+            comment["username"] = getUsername(comment["userId"])
+        return comments
+    except:
+        return []
